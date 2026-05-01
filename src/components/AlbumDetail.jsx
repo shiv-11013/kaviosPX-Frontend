@@ -11,8 +11,9 @@ const AlbumDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // UPDATED: Path changed to /api/images
     axios
-      .get(`/api/albums/${albumId}/images`)
+      .get(`/api/images/${albumId}`)
       .then((response) => {
         setImages(response.data.images || []);
       })
@@ -33,8 +34,9 @@ const AlbumDetails = () => {
     formData.append("image", file);
 
     try {
+      // UPDATED: Path changed to /api/images
       const response = await axios.post(
-        `/api/albums/${albumId}/images`,
+        `/api/images/${albumId}`,
         formData
       );
 
@@ -55,8 +57,9 @@ const AlbumDetails = () => {
     }
 
     try {
+      // UPDATED: Path changed to /api/images
       const response = await axios.post(
-        `/api/albums/${albumId}/images/${imageId}/comments`,
+        `/api/images/${albumId}/${imageId}/comments`,
         { comment }
       );
 
@@ -82,8 +85,9 @@ const AlbumDetails = () => {
 
   const handleToggleFavorite = async (imageId) => {
     try {
+      // UPDATED: Path changed to /api/images
       const response = await axios.put(
-        `/api/albums/${albumId}/images/${imageId}/favorite`
+        `/api/images/${albumId}/${imageId}/favorite`
       );
 
       const updatedImages = images.map((img) => {
@@ -104,7 +108,8 @@ const AlbumDetails = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`/api/albums/${albumId}/images/${imageId}`);
+      // UPDATED: Path changed to /api/images
+      await axios.delete(`/api/images/${albumId}/${imageId}`);
 
       const updatedImages = images.filter(
         (img) => img.imageId !== imageId
