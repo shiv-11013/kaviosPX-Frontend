@@ -42,9 +42,9 @@ const Login = () => {
     }
   };
 
-  // ✅ FIXED (NO LOCALHOST)
+  // Fixed: Hardcoded the URL directly here
   const handleGoogleLogin = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/google`;
+    window.location.href = "https://kaviospx.onrender.com/api/auth/google";
   };
 
   return (
