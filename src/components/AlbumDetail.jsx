@@ -9,7 +9,6 @@ const AlbumDetails = () => {
   const [file, setFile] = useState(null);
   const [comments, setComments] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     axios
@@ -17,9 +16,8 @@ const AlbumDetails = () => {
       .then((response) => {
         setImages(response.data.images || []);
       })
-      .catch((error) => {
-        console.log(error);
-        setError("Failed to load images");
+      .catch((err) => {
+        console.log(err);
       })
       .finally(() => {
         setLoading(false);
@@ -43,7 +41,7 @@ const AlbumDetails = () => {
       setImages((prev) => [...prev, response.data.image]);
       setFile(null);
       alert("Image uploaded");
-    } catch (error) {
+    } catch (err) {
       alert("Upload failed");
     }
   };
@@ -52,7 +50,7 @@ const AlbumDetails = () => {
     const comment = comments[imageId];
 
     if (!comment || !comment.trim()) {
-      alert(`Please add the comment`);
+      alert("Please add the comment");
       return;
     }
 
@@ -77,7 +75,7 @@ const AlbumDetails = () => {
       });
 
       alert("Comment Added");
-    } catch (error) {
+    } catch (err) {
       alert("Comment failed");
     }
   };
@@ -96,7 +94,7 @@ const AlbumDetails = () => {
       });
 
       setImages(updatedImages);
-    } catch (error) {
+    } catch (err) {
       alert("Favorite toggle failed");
     }
   };
@@ -113,7 +111,7 @@ const AlbumDetails = () => {
       );
 
       setImages(updatedImages);
-    } catch (error) {
+    } catch (err) {
       alert("Delete failed");
     }
   };
@@ -132,7 +130,7 @@ const AlbumDetails = () => {
         <div className="image-grid">
           {images.map((img) => (
             <div className="image-card" key={img.imageId}>
-              {img.url && <img src={img.url} alt="album" width="200px" />}
+              {img.url && <img src={img.url} alt="album" />}
 
               <button
                 className="like-btn"
@@ -141,18 +139,12 @@ const AlbumDetails = () => {
                 {img.isFavorite ? "❤️" : "🤍"}
               </button>
 
-              <br />
-              <br />
-
               <button
                 className="delete-btn"
                 onClick={() => handleDeleteImage(img.imageId)}
               >
                 Delete Image
               </button>
-
-              <br />
-              <br />
 
               <input
                 className="comment-box"
@@ -171,9 +163,6 @@ const AlbumDetails = () => {
               >
                 Add Comment
               </button>
-
-              <br />
-              <br />
 
               <div className="comment-list">
                 <h4>Comments</h4>
