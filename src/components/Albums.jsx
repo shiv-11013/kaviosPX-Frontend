@@ -20,9 +20,13 @@ const Album = () => {
     axios
       .get("/api/albums")
       .then((res) => {
-        setAlbums(res.data.albums);
+        console.log("API RESPONSE:", res.data); // DEBUG
+        setAlbums(res.data.albums || []); // ✅ SAFE
       })
-      .catch((err) => console.log(err))
+      .catch((err) => {
+        console.log("ERROR:", err);
+        setAlbums([]); // ✅ fallback
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -113,51 +117,52 @@ const Album = () => {
         <h3>Album List</h3>
 
         <div className="list">
-          {albums.map((al) => (
-            <div
-              key={al._id}
-              className="item"
-              onClick={() => handleAlbumClick(al.albumId)}
-            >
-              <div className="row">
-                <span>{al.name}</span>
+          {Array.isArray(albums) &&
+            albums.map((al) => (
+              <div
+                key={al._id || al.albumId} // ✅ SAFE
+                className="item"
+                onClick={() => handleAlbumClick(al.albumId || al._id)}
+              >
+                <div className="row">
+                  <span>{al.name}</span>
 
-                <button
-                  className="delete"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteAlbum(al.albumId);
-                  }}
-                >
-                  Delete
-                </button>
+                  <button
+                    className="delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteAlbum(al.albumId || al._id);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+
+                <div className="share">
+                  <input
+                    type="email"
+                    placeholder="Enter email"
+                    value={shareEmails[al.albumId || al._id] || ""}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) =>
+                      setShareEmails({
+                        ...shareEmails,
+                        [al.albumId || al._id]: e.target.value,
+                      })
+                    }
+                  />
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleShareAlbum(al.albumId || al._id);
+                    }}
+                  >
+                    Share
+                  </button>
+                </div>
               </div>
-
-              <div className="share">
-                <input
-                  type="email"
-                  placeholder="Enter email"
-                  value={shareEmails[al.albumId] || ""}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) =>
-                    setShareEmails({
-                      ...shareEmails,
-                      [al.albumId]: e.target.value,
-                    })
-                  }
-                />
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleShareAlbum(al.albumId);
-                  }}
-                >
-                  Share
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </div>
