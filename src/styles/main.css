@@ -334,3 +334,10 @@ h3 {
   color: white;
   cursor: pointer;
 }
+
+
+.otp-input {
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 4px;
+}

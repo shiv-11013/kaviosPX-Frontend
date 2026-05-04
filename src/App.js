@@ -3,6 +3,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import Albums from "./components/Albums";
 import AlbumDetail from "./components/AlbumDetail";
+import OtpVerify from "./components/OtpVerify";
 
 import "./styles/main.css";
 
@@ -21,6 +22,9 @@ function App() {
         <Route path="/" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
+
+        <Route path="/verify-otp" element={<OtpVerify />} />
+        
         <Route
           path="/albums"
           element={

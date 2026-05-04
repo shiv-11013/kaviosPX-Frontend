@@ -34,18 +34,18 @@ const Register = () => {
     }
 
     try {
-      const res = await axios.post("/api/auth/register", {
-        firstName,
-        lastName,
-        email,
-        password,
-        confirmPassword,
+      await axios.post("/api/auth/send-otp", {
+        userEmail: email,
       });
 
-      localStorage.setItem("token", res.data.token);
-      navigate("/albums");
+      navigate("/verify-otp", {
+        state: {
+          email,
+          password,
+        },
+      });
     } catch (err) {
-      alert("Register failed");
+      alert("Failed to send OTP");
     }
   };
 
@@ -91,9 +91,7 @@ const Register = () => {
 
         <button onClick={handleRegister}>Sign up</button>
 
-        <p onClick={() => navigate("/")}>
-          Already have an account? Log in
-        </p>
+        <p onClick={() => navigate("/")}>Already have an account? Log in</p>
       </div>
     </div>
   );
