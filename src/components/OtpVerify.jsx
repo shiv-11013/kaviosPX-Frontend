@@ -7,17 +7,26 @@ const OtpVerify = () => {
   const location = useLocation();
 
   const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const email = location.state?.email;
   const password = location.state?.password;
 
   const handleVerify = async () => {
+    if (!email || !password) {
+      alert("Session expired, please register again");
+      navigate("/register");
+      return;
+    }
+
     if (!otp) {
       alert("Enter OTP");
       return;
     }
 
     try {
+      setLoading(true);
+
       const res = await axios.post("/api/auth/verify-otp", {
         userEmail: email,
         otp,
@@ -27,7 +36,9 @@ const OtpVerify = () => {
       localStorage.setItem("token", res.data.token);
       navigate("/albums");
     } catch (err) {
-      alert("OTP verification failed");
+      alert(err?.response?.data?.message || "OTP verification failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,7 +55,9 @@ const OtpVerify = () => {
           onChange={(e) => setOtp(e.target.value)}
         />
 
-        <button onClick={handleVerify}>Verify OTP</button>
+        <button onClick={handleVerify} disabled={loading}>
+          {loading ? "Verifying..." : "Verify OTP"}
+        </button>
       </div>
     </div>
   );

@@ -13,6 +13,8 @@ const Register = () => {
     confirmPassword: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -21,7 +23,7 @@ const Register = () => {
   };
 
   const handleRegister = async () => {
-    const { firstName, lastName, email, password, confirmPassword } = form;
+    const { email, password, confirmPassword } = form;
 
     if (!email || !password || !confirmPassword) {
       alert("All fields are required");
@@ -34,6 +36,8 @@ const Register = () => {
     }
 
     try {
+      setLoading(true);
+
       await axios.post("/api/auth/send-otp", {
         userEmail: email,
       });
@@ -46,6 +50,8 @@ const Register = () => {
       });
     } catch (err) {
       alert("Failed to send OTP");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,28 +66,24 @@ const Register = () => {
           placeholder="First Name"
           onChange={handleChange}
         />
-
         <input
           type="text"
           name="lastName"
           placeholder="Last Name"
           onChange={handleChange}
         />
-
         <input
           type="email"
           name="email"
           placeholder="Email"
           onChange={handleChange}
         />
-
         <input
           type="password"
           name="password"
           placeholder="Password"
           onChange={handleChange}
         />
-
         <input
           type="password"
           name="confirmPassword"
@@ -89,7 +91,9 @@ const Register = () => {
           onChange={handleChange}
         />
 
-        <button onClick={handleRegister}>Sign up</button>
+        <button onClick={handleRegister} disabled={loading}>
+          {loading ? "Sending OTP..." : "Sign up"}
+        </button>
 
         <p onClick={() => navigate("/")}>Already have an account? Log in</p>
       </div>
