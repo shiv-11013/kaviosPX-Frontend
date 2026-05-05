@@ -14,6 +14,7 @@ const Register = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(""); // Yahan state define ki
 
   const handleChange = (e) => {
     setForm({
@@ -37,17 +38,22 @@ const Register = () => {
 
     try {
       setLoading(true);
-
       await axios.post("/api/auth/send-otp", {
         userEmail: email,
       });
 
-      navigate("/verify-otp", {
-        state: {
-          email,
-          password,
-        },
-      });
+   
+      setMessage("OTP has been sent successfully!"); 
+
+      setTimeout(() => {
+        navigate("/verify-otp", {
+          state: {
+            email,
+            password,
+          },
+        });
+      }, 1500);
+
     } catch (err) {
       alert("Failed to send OTP");
     } finally {
@@ -59,6 +65,8 @@ const Register = () => {
     <div className="auth-wrapper">
       <div className="auth-card">
         <h2>Create Account</h2>
+
+        {message && <p className="success-msg">{message}</p>}
 
         <input
           type="text"
