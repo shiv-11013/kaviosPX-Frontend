@@ -1,70 +1,157 @@
-# Getting Started with Create React App
+# 📷 KaviosPix — Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Frontend application for KaviosPix built with React.js.
 
-## Available Scripts
+It handles Google OAuth login, JWT-based authentication, OTP verification, protected routes and album/image management by communicating with the KaviosPix backend API.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## 🚀 Live App
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+https://kavios-px-frontend.vercel.app/
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## ⚙️ Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- React.js
+- React Router DOM
+- Axios
+- Custom CSS
+- React Hooks (useState, useEffect, useNavigate)
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📁 Project Structure
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+kaviospix-frontend/
+├── src/
+│   ├── api/
+│   │   └── axios.js
+│   ├── components/
+│   │   ├── Login.jsx
+│   │   ├── Register.jsx
+│   │   ├── OtpVerify.jsx
+│   │   ├── Albums.jsx
+│   │   └── AlbumDetail.jsx
+│   ├── styles/
+│   │   └── main.css
+│   └── App.js
+└── package.json
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🔐 Auth Flow
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Google OAuth
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- User clicks "Continue with Google"
+- Redirected to backend `/api/auth/google`
+- After successful login, JWT token comes in URL query params
+- Token saved in localStorage
+- User redirected to `/albums`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Email/Password Login
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- User enters email and password
+- POST `/api/auth/login`
+- JWT token saved in localStorage
+- User redirected to `/albums`
 
-## Learn More
+### Register + OTP Verification
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- User fills register form
+- OTP sent via `/api/auth/send-otp`
+- User redirected to `/verify-otp`
+- User enters OTP
+- POST `/api/auth/verify-otp`
+- JWT token returned on success
+- User redirected to `/albums`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
 
-### Code Splitting
+## 📦 Features
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- Google OAuth authentication
+- Email/password authentication flow with JWT token handling
+- OTP-based email verification
+- Protected routes
+- Album create / delete / share
+- Image upload
+- Favorite images
+- Add comments on images
+- Logout functionality
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🧠 Important Logic
 
-### Making a Progressive Web App
+### Axios Interceptor
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+JWT token is automatically attached to authenticated API requests using Axios request interceptors. This avoids manually passing tokens in every request.
 
-### Advanced Configuration
+### ProtectedRoute
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+If token does not exist in localStorage, user is redirected to login page. Used for protected pages like `/albums` and `/albums/:albumId`.
 
-### Deployment
+### OTP Flow
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+After OTP is sent successfully, user is redirected to OTP verification page with temporary auth state passed through navigation.
 
-### `npm run build` fails to minify
+### Dynamic State Handling
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Album sharing inputs and image comment inputs are managed using dynamic object state patterns like:
+
+```js
+{ [albumId]: email }
+```
+
+and
+
+```js
+{ [imageId]: comment }
+```
+
+This avoids creating separate state variables for every album or image.
+
+---
+
+## ⚠️ Problems I faced
+
+- Handling Google OAuth redirect flow and extracting JWT token from URL query params
+- Managing protected routes and preventing unauthorized access without token
+- Maintaining separate dynamic state for album sharing and image comments
+- Passing temporary auth state between register and OTP verification pages
+- Debugging CORS issues between Vercel frontend and Render backend during deployment
+- Handling async API states and preventing duplicate requests during OTP verification
+
+---
+
+## ❌ Limitations
+
+- No toast notification system yet
+- No image preview before upload
+- No loading skeletons
+- Mobile responsiveness not fully optimized
+- State managed locally without Redux/Context API
+
+---
+
+## ▶️ Run locally
+
+```bash
+git clone https://github.com/shiv-11013/kaviosPX-Frontend
+cd kaviospix-frontend
+npm install
+npm start
+```
+
+---
+
+## 👨‍💻 Author
+
+Name: Shiv Kumar  
+GitHub: https://github.com/shiv-11013  
+Email: shivkumar121112@gmail.com
