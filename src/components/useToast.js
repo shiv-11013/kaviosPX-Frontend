@@ -1,32 +1,45 @@
 import { useState, useCallback } from "react";
 
 /**
- * useToast — lightweight in-component toast notifications
- *
+ * useToast — lightweight toast notifications
  * Usage:
  *   const { showToast, ToastContainer } = useToast();
  *   showToast("Saved!", "success");   // types: success | error | info
- *   return <> ... <ToastContainer /> </>
  */
 export function useToast() {
   const [toasts, setToasts] = useState([]);
 
   const showToast = useCallback((message, type = "info") => {
-    const id = Date.now();
+    const id = Date.now() + Math.random();
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3000);
+    }, 3500);
   }, []);
 
-  const icon = { success: "✓", error: "✕", info: "ℹ" };
+  const dismiss = useCallback((id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const icons = {
+    success: "✓",
+    error:   "✕",
+    info:    "i",
+  };
 
   const ToastContainer = () => (
-    <div className="toast-container">
+    <div className="toast-container" role="region" aria-label="Notifications" aria-live="polite">
       {toasts.map((t) => (
-        <div key={t.id} className={`toast toast-${t.type}`}>
-          <span>{icon[t.type]}</span>
-          <span>{t.message}</span>
+        <div
+          key={t.id}
+          className={`toast toast-${t.type}`}
+          role="alert"
+          onClick={() => dismiss(t.id)}
+          style={{ cursor: "pointer" }}
+          title="Click to dismiss"
+        >
+          <span className="toast-icon">{icons[t.type]}</span>
+          <span style={{ flex: 1 }}>{t.message}</span>
         </div>
       ))}
     </div>

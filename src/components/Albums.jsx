@@ -22,7 +22,7 @@ const ImagesIcon = () => (
 );
 
 const TrashIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6"/>
     <path d="M19 6l-1 14H6L5 6"/>
@@ -32,19 +32,29 @@ const TrashIcon = () => (
 );
 
 const ShareIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+    <circle cx="18" cy="5" r="3"/>
+    <circle cx="6" cy="12" r="3"/>
+    <circle cx="18" cy="19" r="3"/>
     <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
   </svg>
 );
 
 const PlusIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth="2.5" strokeLinecap="round">
     <line x1="12" y1="5" x2="12" y2="19"/>
     <line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
+const ArrowRightIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+    <polyline points="12 5 19 12 12 19"/>
   </svg>
 );
 
@@ -59,9 +69,8 @@ const Albums = () => {
   const [shareEmails, setShareEmails] = useState({});
   const [loading,     setLoading]     = useState(true);
   const [creating,    setCreating]    = useState(false);
-  const [deleteModal, setDeleteModal] = useState({ open: false, albumId: null });
+  const [deleteModal, setDeleteModal] = useState({ open: false, albumId: null, albumName: "" });
 
-  // Fetch all albums on mount
   useEffect(() => {
     axios.get("/api/albums")
       .then((res) => setAlbums(res.data.albums || []))
@@ -76,11 +85,13 @@ const Albums = () => {
   };
 
   const handleCreateAlbum = async () => {
-    if (!name.trim() || !description.trim())
-      return showToast("Please fill in both fields", "error");
+    if (!name.trim()) return showToast("Album name is required", "error");
     setCreating(true);
     try {
-      const res = await axios.post("/api/albums", { name, description });
+      const res = await axios.post("/api/albums", {
+        name: name.trim(),
+        description: description.trim() || "No description",
+      });
       setAlbums((prev) => [...prev, res.data.album]);
       setName("");
       setDescription("");
@@ -94,10 +105,10 @@ const Albums = () => {
 
   const confirmDeleteAlbum = async () => {
     const albumId = deleteModal.albumId;
-    setDeleteModal({ open: false, albumId: null });
+    setDeleteModal({ open: false, albumId: null, albumName: "" });
     try {
       await axios.delete(`/api/albums/${albumId}`);
-      setAlbums((prev) => prev.filter((al) => (al.albumId || al._id) !== albumId));
+      setAlbums((prev) => prev.filter((al) => getAlbumId(al) !== albumId));
       showToast("Album deleted", "success");
     } catch {
       showToast("Failed to delete album", "error");
@@ -105,7 +116,7 @@ const Albums = () => {
   };
 
   const handleShareAlbum = async (albumId) => {
-    const email = shareEmails[albumId];
+    const email = shareEmails[albumId]?.trim();
     if (!email) return showToast("Enter an email to share", "error");
     try {
       await axios.post(`/api/albums/${albumId}/share`, { emails: [email] });
@@ -116,13 +127,15 @@ const Albums = () => {
     }
   };
 
+  const getAlbumId = (al) => al.albumId || al._id;
+
   if (loading) {
     return (
       <>
         <nav className="topnav">
           <div className="topnav-logo">
-            <div className="topnav-logo-icon"><CameraIcon /></div>
-            <span className="topnav-name">KaviosPx</span>
+            <div className="topnav-logo-mark"><CameraIcon /></div>
+            <span className="topnav-logo-name">KaviosPx</span>
           </div>
         </nav>
         <div className="loading-screen">
@@ -139,8 +152,8 @@ const Albums = () => {
       {/* ── Nav ── */}
       <nav className="topnav">
         <div className="topnav-logo">
-          <div className="topnav-logo-icon"><CameraIcon /></div>
-          <span className="topnav-name">KaviosPx</span>
+          <div className="topnav-logo-mark"><CameraIcon /></div>
+          <span className="topnav-logo-name">KaviosPx</span>
         </div>
         <div className="topnav-spacer" />
         <button className="btn-logout" onClick={handleLogout}>Log out</button>
@@ -149,6 +162,7 @@ const Albums = () => {
       <main className="page-content">
         {/* ── Page header ── */}
         <div className="page-header">
+          <span className="page-eyebrow">Gallery</span>
           <h1 className="page-title">My Albums</h1>
           <p className="page-subtitle">Organise and share your photo collections</p>
         </div>
@@ -164,6 +178,7 @@ const Albums = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateAlbum()}
+              autoComplete="off"
             />
             <input
               className="create-input"
@@ -172,53 +187,90 @@ const Albums = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateAlbum()}
+              autoComplete="off"
             />
             <button className="btn-create" onClick={handleCreateAlbum} disabled={creating}>
-              <span style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-                <PlusIcon />
-                {creating ? "Creating…" : "Create"}
-              </span>
+              <PlusIcon />
+              {creating ? "Creating…" : "Create"}
             </button>
           </div>
         </div>
 
         {/* ── Album list ── */}
         <p className="section-heading">
-          {albums.length} album{albums.length !== 1 ? "s" : ""}
+          {albums.length} {albums.length === 1 ? "album" : "albums"}
         </p>
+
         <div className="album-grid">
           {albums.length === 0 ? (
             <div className="empty-state">
-              <ImagesIcon />
-              <p>No albums yet. Create your first one above.</p>
+              <div className="empty-state-icon"><ImagesIcon /></div>
+              <p>No albums yet.</p>
+              <p className="empty-action">Create your first album above to get started.</p>
             </div>
           ) : (
             albums.map((al) => {
-              const id = al.albumId || al._id;
+              const id = getAlbumId(al);
               return (
                 <div className="album-card" key={id} onClick={() => navigate(`/albums/${id}`)}>
-                  <div className="album-card-thumb"><ImagesIcon /></div>
-                  <div className="album-card-body">
-                    <p className="album-card-name">{al.name}</p>
+                  {/* Gold accent line */}
+                  <div className="album-card-accent" aria-hidden="true" />
 
-                    {/* Stop click from navigating into the album */}
+                  {/* Thumbnail */}
+                  <div className="album-card-thumb">
+                    {al.coverUrl ? (
+                      <img
+                        src={al.coverUrl}
+                        alt={al.name}
+                        className="album-thumb-img"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="album-thumb-placeholder">
+                        <ImagesIcon />
+                        <span>No photos yet</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Body */}
+                  <div className="album-card-body">
+                    <div className="album-card-meta">
+                      <p className="album-card-name">{al.name}</p>
+                      {al.imageCount != null && (
+                        <span className="album-card-count">
+                          {al.imageCount} {al.imageCount === 1 ? "photo" : "photos"}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Actions — stop propagation so clicks don't navigate */}
                     <div className="album-card-actions" onClick={(e) => e.stopPropagation()}>
                       <div className="share-input-wrap">
+                        <ShareIcon style={{ color: "var(--text-4)", flexShrink: 0 }} />
                         <input
                           className="share-input"
                           type="email"
                           placeholder="Share via email"
                           value={shareEmails[id] || ""}
-                          onChange={(e) => setShareEmails((prev) => ({ ...prev, [id]: e.target.value }))}
+                          onChange={(e) =>
+                            setShareEmails((prev) => ({ ...prev, [id]: e.target.value }))
+                          }
                           onKeyDown={(e) => e.key === "Enter" && handleShareAlbum(id)}
+                          onClick={(e) => e.stopPropagation()}
                         />
                         <button className="btn-share" onClick={() => handleShareAlbum(id)}>
-                          <ShareIcon /> Share
+                          Share
                         </button>
                       </div>
+
                       <button
                         className="btn-delete-album"
-                        onClick={() => setDeleteModal({ open: true, albumId: id })}
+                        onClick={() =>
+                          setDeleteModal({ open: true, albumId: id, albumName: al.name })
+                        }
+                        title="Delete album"
+                        aria-label="Delete album"
                       >
                         <TrashIcon />
                       </button>
@@ -233,17 +285,31 @@ const Albums = () => {
 
       {/* ── Delete confirmation modal ── */}
       {deleteModal.open && (
-        <div className="modal-overlay" onClick={() => setDeleteModal({ open: false, albumId: null })}>
+        <div
+          className="modal-overlay"
+          onClick={() => setDeleteModal({ open: false, albumId: null, albumName: "" })}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <p className="modal-title">Delete album?</p>
+            <div className="modal-badge">🗑️</div>
+            <p className="modal-title" id="modal-title">
+              Delete "{deleteModal.albumName}"?
+            </p>
             <p className="modal-desc">
-              This will permanently delete the album and all its images. This action cannot be undone.
+              This will permanently delete the album and all its photos. This action cannot be undone.
             </p>
             <div className="modal-actions">
-              <button className="btn-modal-cancel" onClick={() => setDeleteModal({ open: false, albumId: null })}>
+              <button
+                className="btn-modal-cancel"
+                onClick={() => setDeleteModal({ open: false, albumId: null, albumName: "" })}
+              >
                 Cancel
               </button>
-              <button className="btn-modal-danger" onClick={confirmDeleteAlbum}>Delete</button>
+              <button className="btn-modal-danger" onClick={confirmDeleteAlbum}>
+                Delete album
+              </button>
             </div>
           </div>
         </div>

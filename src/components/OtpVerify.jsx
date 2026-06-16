@@ -16,12 +16,14 @@ const OtpVerify = () => {
   const location  = useLocation();
   const { showToast, ToastContainer } = useToast();
 
-  const [otp, setOtp]       = useState("");
+  const [otp, setOtp]         = useState("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
-  // Passed from Register page via navigate state
   const email    = location.state?.email;
   const password = location.state?.password;
+  const firstName = location.state?.firstName;
+  const lastName  = location.state?.lastName;
 
   const handleVerify = async () => {
     if (!email || !password) {
@@ -37,6 +39,8 @@ const OtpVerify = () => {
         userEmail: email,
         otp,
         password,
+        firstName,
+        lastName,
       });
       localStorage.setItem("token", res.data.token);
       navigate("/albums");
@@ -47,38 +51,63 @@ const OtpVerify = () => {
     }
   };
 
+  const handleResend = async () => {
+    if (!email) return;
+    setResending(true);
+    try {
+      await axios.post("/api/auth/send-otp", { userEmail: email });
+      showToast("New OTP sent — check your inbox.", "success");
+    } catch {
+      showToast("Could not resend OTP. Try again.", "error");
+    } finally {
+      setResending(false);
+    }
+  };
+
   return (
     <div className="auth-page">
-      {/* ── Left: brand ── */}
+      {/* ── Left brand ── */}
       <div className="auth-brand">
         <div className="brand-logo">
-          <div className="brand-logo-icon"><CameraIcon /></div>
+          <div className="brand-logo-mark"><CameraIcon /></div>
           <span className="brand-logo-name">KaviosPx</span>
         </div>
+
         <div className="brand-tagline">
-          <h1>One last<br /><span>step</span><br />to go.</h1>
+          <h1>One last<br /><em>step</em><br />to go.</h1>
           <p>
             We sent a 6-digit code to{" "}
-            <strong style={{ color: "#f1f2f5" }}>{email || "your email"}</strong>.
-            Enter it below to complete sign-up.
+            <strong style={{ color: "var(--text-1)", fontWeight: 500 }}>
+              {email || "your email"}
+            </strong>.
+            Enter it below to confirm your identity.
           </p>
         </div>
-        <div className="brand-grid">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="brand-grid-cell" style={{ opacity: 0.4 + (i % 3) * 0.2 }} />
+
+        <div className="brand-mosaic" aria-hidden="true">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="brand-mosaic-cell" />
+          ))}
+        </div>
+
+        <div className="brand-filmstrip" aria-hidden="true">
+          {Array.from({ length: 14 }).map((_, i) => (
+            <div key={i} className="brand-filmstrip-hole" />
           ))}
         </div>
       </div>
 
-      {/* ── Right: form ── */}
+      {/* ── Right form ── */}
       <div className="auth-form-panel">
         <div className="auth-form-inner">
-          <h2 className="auth-form-title">Check your email</h2>
-          <p className="auth-form-subtitle">Enter the verification code we sent you</p>
+          <span className="auth-form-eyebrow">Verify email</span>
+          <h2 className="auth-form-title">Check your inbox</h2>
+          <p className="auth-form-subtitle">Enter the 6-digit code we sent you</p>
 
           <div className="input-group">
-            <label className="input-label">Verification code</label>
+            <label className="input-label" htmlFor="otp-input">Verification code</label>
             <input
+              id="otp-input"
               className="input-field otp-input"
               type="text"
               inputMode="numeric"
@@ -87,6 +116,8 @@ const OtpVerify = () => {
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
               onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+              autoFocus
+              autoComplete="one-time-code"
             />
           </div>
 
@@ -95,6 +126,17 @@ const OtpVerify = () => {
           </button>
 
           <p className="auth-switch" style={{ marginTop: "20px" }}>
+            Didn't receive it?{" "}
+            <span
+              className="link"
+              onClick={handleResend}
+              style={{ opacity: resending ? 0.5 : 1, pointerEvents: resending ? "none" : "auto" }}
+            >
+              {resending ? "Sending…" : "Resend code"}
+            </span>
+          </p>
+
+          <p className="auth-switch" style={{ marginTop: "8px" }}>
             Wrong email?{" "}
             <span className="link" onClick={() => navigate("/register")}>Go back</span>
           </p>

@@ -13,7 +13,7 @@ const CameraIcon = () => (
 );
 
 const ArrowLeftIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="19" y1="12" x2="5" y2="12"/>
     <polyline points="12 19 5 12 12 5"/>
@@ -21,7 +21,7 @@ const ArrowLeftIcon = () => (
 );
 
 const UploadIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="16 16 12 12 8 16"/>
     <line x1="12" y1="12" x2="12" y2="21"/>
@@ -30,7 +30,7 @@ const UploadIcon = () => (
 );
 
 const TrashIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6"/>
     <path d="M19 6l-1 14H6L5 6"/>
@@ -47,22 +47,91 @@ const SendIcon = () => (
   </svg>
 );
 
+const ImagePlaceholderIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"
+    strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+    <circle cx="8.5" cy="8.5" r="1.5"/>
+    <polyline points="21 15 16 10 5 21"/>
+  </svg>
+);
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+const Lightbox = ({ src, onClose }) => {
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="modal-overlay"
+      onClick={onClose}
+      style={{ cursor: "zoom-out", alignItems: "center", justifyContent: "center" }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image preview"
+    >
+      <img
+        src={src}
+        alt="Full size"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: "90vw",
+          maxHeight: "90vh",
+          borderRadius: "var(--radius-md)",
+          objectFit: "contain",
+          boxShadow: "0 24px 80px rgba(0,0,0,0.8)",
+        }}
+      />
+      <button
+        onClick={onClose}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "24px",
+          background: "rgba(8,10,15,0.8)",
+          border: "1px solid var(--border-2)",
+          color: "var(--text-1)",
+          width: "40px",
+          height: "40px",
+          borderRadius: "var(--radius-full)",
+          cursor: "pointer",
+          fontSize: "20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "var(--font-ui)",
+        }}
+        aria-label="Close preview"
+      >
+        ×
+      </button>
+    </div>
+  );
+};
+
 // ── Component ─────────────────────────────────────────────────────────────────
 const AlbumDetail = () => {
-  const { albumId } = useParams();
-  const navigate    = useNavigate();
+  const { albumId }  = useParams();
+  const navigate     = useNavigate();
   const fileInputRef = useRef(null);
   const { showToast, ToastContainer } = useToast();
 
   const [images,      setImages]      = useState([]);
   const [file,        setFile]        = useState(null);
   const [fileName,    setFileName]    = useState("");
-  const [comments,    setComments]    = useState({});   // { [imageId]: string }
+  const [comments,    setComments]    = useState({});
   const [loading,     setLoading]     = useState(true);
   const [uploading,   setUploading]   = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, imageId: null });
+  const [lightbox,    setLightbox]    = useState(null);
 
-  // Fetch images for this album
   useEffect(() => {
     axios.get(`/api/images/${albumId}`)
       .then((res) => setImages(res.data.images || []))
@@ -100,10 +169,22 @@ const AlbumDetail = () => {
     }
   };
 
+  // Drag and drop
+  const handleDragOver = (e) => { e.preventDefault(); };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files[0];
+    if (!f) return;
+    if (!f.type.startsWith("image/")) return showToast("Please drop an image file", "error");
+    if (f.size > 10 * 1024 * 1024) return showToast("Image must be under 10 MB", "error");
+    setFile(f);
+    setFileName(f.name);
+  };
+
   // ── Comment ─────────────────────────────────────────────────────────────────
   const handleAddComment = async (imageId) => {
-    const comment = comments[imageId];
-    if (!comment?.trim()) return showToast("Write a comment first", "error");
+    const comment = comments[imageId]?.trim();
+    if (!comment) return showToast("Write a comment first", "error");
     try {
       const res = await axios.post(`/api/images/${albumId}/${imageId}/comments`, { comment });
       setImages((prev) => prev.map((img) =>
@@ -115,9 +196,8 @@ const AlbumDetail = () => {
     }
   };
 
-  // ── Favourite (optimistic update) ───────────────────────────────────────────
+  // ── Favourite (optimistic) ───────────────────────────────────────────────────
   const handleToggleFavourite = async (imageId) => {
-    // Update UI immediately — revert if API fails
     setImages((prev) => prev.map((img) =>
       img.imageId === imageId ? { ...img, isFavorite: !img.isFavorite } : img
     ));
@@ -127,7 +207,6 @@ const AlbumDetail = () => {
         img.imageId === imageId ? { ...img, isFavorite: res.data.isFavorite } : img
       ));
     } catch {
-      // Revert on failure
       setImages((prev) => prev.map((img) =>
         img.imageId === imageId ? { ...img, isFavorite: !img.isFavorite } : img
       ));
@@ -154,8 +233,8 @@ const AlbumDetail = () => {
       {/* ── Nav ── */}
       <nav className="topnav">
         <div className="topnav-logo">
-          <div className="topnav-logo-icon"><CameraIcon /></div>
-          <span className="topnav-name">KaviosPx</span>
+          <div className="topnav-logo-mark"><CameraIcon /></div>
+          <span className="topnav-logo-name">KaviosPx</span>
         </div>
         <div className="topnav-spacer" />
         <button className="topnav-back" onClick={() => navigate("/albums")}>
@@ -166,14 +245,26 @@ const AlbumDetail = () => {
       <main className="page-content">
         {/* ── Page header ── */}
         <div className="page-header">
-          <h1 className="page-title">Images</h1>
-          <p className="page-subtitle">Hover a photo to favourite it · press Enter to post a comment</p>
+          <span className="page-eyebrow">Album</span>
+          <h1 className="page-title">Photos</h1>
+          <p className="page-subtitle">
+            Hover a photo to favourite it · click to preview · press Enter to post a comment
+          </p>
         </div>
 
         {/* ── Upload bar ── */}
-        <div className="upload-bar">
+        <div
+          className="upload-bar"
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        >
           <span className="upload-bar-label">Upload</span>
-          <label className="file-pick-btn" style={{ cursor: "pointer" }}>
+
+          <label
+            className="file-pick-btn"
+            style={{ cursor: "pointer" }}
+            aria-label="Choose image file"
+          >
             <input
               ref={fileInputRef}
               type="file"
@@ -181,10 +272,12 @@ const AlbumDetail = () => {
               onChange={handleFileSelect}
               style={{ display: "none" }}
             />
+            <UploadIcon />
             <span className={`file-name-display ${fileName ? "has-file" : ""}`}>
-              {fileName || "Choose an image…"}
+              {fileName || "Choose or drop an image here…"}
             </span>
           </label>
+
           <button className="btn-upload" onClick={handleUpload} disabled={uploading || !file}>
             <UploadIcon />
             {uploading ? "Uploading…" : "Upload"}
@@ -195,28 +288,52 @@ const AlbumDetail = () => {
         {loading ? (
           <div className="loading-screen">
             <div className="spinner" />
-            <p className="loading-text">Loading images…</p>
+            <p className="loading-text">Loading photos…</p>
           </div>
         ) : images.length === 0 ? (
           <div className="empty-state">
-            <CameraIcon />
-            <p style={{ marginTop: "16px" }}>No images yet. Upload your first photo above.</p>
+            <div className="empty-state-icon">
+              <ImagePlaceholderIcon />
+            </div>
+            <p>No photos yet.</p>
+            <p className="empty-action">Upload your first photo using the panel above.</p>
           </div>
         ) : (
           <div className="image-grid">
             {images.map((img) => (
               <div className="image-card" key={img.imageId}>
 
-                {/* Thumbnail with hover overlay */}
-                <div className="image-card-thumb">
-                  {img.url && <img src={img.url} alt="album photo" loading="lazy" />}
+                {/* Thumbnail */}
+                <div
+                  className="image-card-thumb"
+                  onClick={() => img.url && setLightbox(img.url)}
+                  style={{ cursor: img.url ? "zoom-in" : "default" }}
+                  role={img.url ? "button" : undefined}
+                  tabIndex={img.url ? 0 : undefined}
+                  aria-label={img.url ? "View full size" : undefined}
+                  onKeyDown={(e) => e.key === "Enter" && img.url && setLightbox(img.url)}
+                >
+                  {img.url ? (
+                    <img src={img.url} alt="Album photo" loading="lazy" />
+                  ) : (
+                    <div className="empty-state-icon" style={{ margin: "auto" }}>
+                      <ImagePlaceholderIcon />
+                    </div>
+                  )}
+
+                  {/* Hover overlay */}
                   <div className="image-card-overlay">
                     <button
                       className={`btn-fav ${img.isFavorite ? "is-fav" : ""}`}
-                      onClick={() => handleToggleFavourite(img.imageId)}
-                      title={img.isFavorite ? "Remove favourite" : "Add to favourites"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleFavourite(img.imageId);
+                      }}
+                      title={img.isFavorite ? "Remove from favourites" : "Add to favourites"}
+                      aria-label={img.isFavorite ? "Remove from favourites" : "Add to favourites"}
+                      aria-pressed={img.isFavorite}
                     >
-                      {img.isFavorite ? "❤️" : "🤍"}
+                      {img.isFavorite ? "♥" : "♡"}
                     </button>
                   </div>
                 </div>
@@ -232,8 +349,13 @@ const AlbumDetail = () => {
                         setComments((prev) => ({ ...prev, [img.imageId]: e.target.value }))
                       }
                       onKeyDown={(e) => e.key === "Enter" && handleAddComment(img.imageId)}
+                      aria-label="Add comment"
                     />
-                    <button className="btn-add-comment" onClick={() => handleAddComment(img.imageId)}>
+                    <button
+                      className="btn-add-comment"
+                      onClick={() => handleAddComment(img.imageId)}
+                      aria-label="Post comment"
+                    >
                       <SendIcon />
                     </button>
                   </div>
@@ -250,11 +372,12 @@ const AlbumDetail = () => {
                   )}
                 </div>
 
-                {/* Delete button */}
+                {/* Footer */}
                 <div className="image-card-footer">
                   <button
                     className="btn-delete-img"
                     onClick={() => setDeleteModal({ open: true, imageId: img.imageId })}
+                    aria-label="Delete image"
                   >
                     <TrashIcon /> Delete
                   </button>
@@ -266,20 +389,34 @@ const AlbumDetail = () => {
         )}
       </main>
 
-      {/* ── Delete confirmation modal ── */}
+      {/* ── Lightbox ── */}
+      {lightbox && <Lightbox src={lightbox} onClose={() => setLightbox(null)} />}
+
+      {/* ── Delete modal ── */}
       {deleteModal.open && (
-        <div className="modal-overlay" onClick={() => setDeleteModal({ open: false, imageId: null })}>
+        <div
+          className="modal-overlay"
+          onClick={() => setDeleteModal({ open: false, imageId: null })}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="del-modal-title"
+        >
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <p className="modal-title">Delete image?</p>
+            <div className="modal-badge">🗑️</div>
+            <p className="modal-title" id="del-modal-title">Delete this photo?</p>
             <p className="modal-desc">
-              This image will be permanently removed. This action cannot be undone.
+              This photo will be permanently removed. This action cannot be undone.
             </p>
             <div className="modal-actions">
-              <button className="btn-modal-cancel"
-                onClick={() => setDeleteModal({ open: false, imageId: null })}>
+              <button
+                className="btn-modal-cancel"
+                onClick={() => setDeleteModal({ open: false, imageId: null })}
+              >
                 Cancel
               </button>
-              <button className="btn-modal-danger" onClick={confirmDelete}>Delete</button>
+              <button className="btn-modal-danger" onClick={confirmDelete}>
+                Delete photo
+              </button>
             </div>
           </div>
         </div>

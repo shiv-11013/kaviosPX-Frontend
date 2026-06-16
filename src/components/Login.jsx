@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import { useToast } from "./useToast";
 
-// ── Icons ────────────────────────────────────────────────────────────────────
 const CameraIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
     strokeLinecap="round" strokeLinejoin="round">
@@ -21,16 +20,27 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// ── Component ─────────────────────────────────────────────────────────────────
+const FilmIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="2.18"/>
+    <line x1="7" y1="2" x2="7" y2="22"/>
+    <line x1="17" y1="2" x2="17" y2="22"/>
+    <line x1="2" y1="12" x2="22" y2="12"/>
+    <line x1="2" y1="7" x2="7" y2="7"/>
+    <line x1="2" y1="17" x2="7" y2="17"/>
+    <line x1="17" y1="17" x2="22" y2="17"/>
+    <line x1="17" y1="7" x2="22" y2="7"/>
+  </svg>
+);
+
 const Login = () => {
   const navigate = useNavigate();
   const { showToast, ToastContainer } = useToast();
 
-  const [email, setEmail]       = useState("");
+  const [email, setEmail]     = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading]   = useState(false);
 
-  // If already logged in, skip to albums
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const googleToken = params.get("token");
@@ -62,50 +72,67 @@ const Login = () => {
 
   return (
     <div className="auth-page">
-      {/* ── Left: brand ── */}
+      {/* ── Left brand ── */}
       <div className="auth-brand">
         <div className="brand-logo">
-          <div className="brand-logo-icon"><CameraIcon /></div>
+          <div className="brand-logo-mark"><CameraIcon /></div>
           <span className="brand-logo-name">KaviosPx</span>
         </div>
+
         <div className="brand-tagline">
-          <h1>Your photos,<br /><span>beautifully</span><br />organised.</h1>
-          <p>Upload, share, and relive your favourite moments — all in one place.</p>
+          <h1>Your photos,<br /><em>beautifully</em><br />organised.</h1>
+          <p>
+            Upload, share, and relive your favourite moments —
+            all in one private gallery.
+          </p>
         </div>
-        <div className="brand-grid">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="brand-grid-cell" style={{ opacity: 0.4 + (i % 3) * 0.2 }} />
+
+        <div className="brand-mosaic" aria-hidden="true">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="brand-mosaic-cell" />
+          ))}
+        </div>
+
+        {/* Film-strip decoration */}
+        <div className="brand-filmstrip" aria-hidden="true">
+          {Array.from({ length: 14 }).map((_, i) => (
+            <div key={i} className="brand-filmstrip-hole" />
           ))}
         </div>
       </div>
 
-      {/* ── Right: form ── */}
+      {/* ── Right form ── */}
       <div className="auth-form-panel">
         <div className="auth-form-inner">
+          <span className="auth-form-eyebrow">Sign in</span>
           <h2 className="auth-form-title">Welcome back</h2>
-          <p className="auth-form-subtitle">Sign in to your KaviosPx account</p>
+          <p className="auth-form-subtitle">Enter your credentials to access your gallery</p>
 
           <div className="input-group">
-            <label className="input-label">Email address</label>
+            <label className="input-label" htmlFor="login-email">Email address</label>
             <input
+              id="login-email"
               className="input-field"
               type="email"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              autoComplete="email"
             />
           </div>
 
           <div className="input-group">
-            <label className="input-label">Password</label>
+            <label className="input-label" htmlFor="login-password">Password</label>
             <input
+              id="login-password"
               className="input-field"
               type="password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              autoComplete="current-password"
             />
           </div>
 
@@ -126,7 +153,7 @@ const Login = () => {
 
           <p className="auth-switch">
             No account?{" "}
-            <span className="link" onClick={() => navigate("/register")}>Create one</span>
+            <span className="link" onClick={() => navigate("/register")}>Create one free</span>
           </p>
         </div>
       </div>
