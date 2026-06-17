@@ -1,27 +1,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
+import { CameraIcon } from "./icons";
 import { useToast } from "./useToast";
-
-const CameraIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-    strokeLinecap="round" strokeLinejoin="round">
-    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-    <circle cx="12" cy="13" r="4"/>
-  </svg>
-);
 
 const Register = () => {
   const navigate = useNavigate();
   const { showToast, ToastContainer } = useToast();
 
   const [form, setForm] = useState({
-    firstName: "", lastName: "", email: "", password: "", confirmPassword: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleRegister = async () => {
     const { firstName, lastName, email, password, confirmPassword } = form;
@@ -38,8 +36,11 @@ const Register = () => {
       setOtpSent(true);
       showToast("OTP sent! Check your inbox.", "success");
       setTimeout(
-        () => navigate("/verify-otp", { state: { email, password, firstName, lastName } }),
-        1500
+        () =>
+          navigate("/verify-otp", {
+            state: { email, password, firstName, lastName },
+          }),
+        1500,
       );
     } catch {
       showToast("Failed to send OTP. Try again.", "error");
@@ -50,18 +51,25 @@ const Register = () => {
 
   return (
     <div className="auth-page">
-      {/* ── Left brand ── */}
       <div className="auth-brand">
         <div className="brand-logo">
-          <div className="brand-logo-mark"><CameraIcon /></div>
+          <div className="brand-logo-mark">
+            <CameraIcon />
+          </div>
           <span className="brand-logo-name">KaviosPx</span>
         </div>
 
         <div className="brand-tagline">
-          <h1>Store every<br /><em>moment</em><br />forever.</h1>
+          <h1>
+            Store every
+            <br />
+            <em>moment</em>
+            <br />
+            forever.
+          </h1>
           <p>
-            Create albums, add comments, share with friends —
-            your gallery, your way.
+            Create albums, add comments, share with friends — your gallery, your
+            way.
           </p>
         </div>
 
@@ -78,7 +86,6 @@ const Register = () => {
         </div>
       </div>
 
-      {/* ── Right form ── */}
       <div className="auth-form-panel">
         <div className="auth-form-inner">
           <span className="auth-form-eyebrow">Get started</span>
@@ -91,9 +98,17 @@ const Register = () => {
             </div>
           )}
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "12px",
+            }}
+          >
             <div className="input-group">
-              <label className="input-label" htmlFor="reg-fname">First name</label>
+              <label className="input-label" htmlFor="reg-fname">
+                First name
+              </label>
               <input
                 id="reg-fname"
                 className="input-field"
@@ -105,7 +120,9 @@ const Register = () => {
               />
             </div>
             <div className="input-group">
-              <label className="input-label" htmlFor="reg-lname">Last name</label>
+              <label className="input-label" htmlFor="reg-lname">
+                Last name
+              </label>
               <input
                 id="reg-lname"
                 className="input-field"
@@ -119,7 +136,9 @@ const Register = () => {
           </div>
 
           <div className="input-group">
-            <label className="input-label" htmlFor="reg-email">Email address</label>
+            <label className="input-label" htmlFor="reg-email">
+              Email address
+            </label>
             <input
               id="reg-email"
               className="input-field"
@@ -133,7 +152,9 @@ const Register = () => {
           </div>
 
           <div className="input-group">
-            <label className="input-label" htmlFor="reg-pwd">Password</label>
+            <label className="input-label" htmlFor="reg-pwd">
+              Password
+            </label>
             <input
               id="reg-pwd"
               className="input-field"
@@ -147,7 +168,9 @@ const Register = () => {
           </div>
 
           <div className="input-group">
-            <label className="input-label" htmlFor="reg-confirm">Confirm password</label>
+            <label className="input-label" htmlFor="reg-confirm">
+              Confirm password
+            </label>
             <input
               id="reg-confirm"
               className="input-field"
@@ -161,13 +184,19 @@ const Register = () => {
             />
           </div>
 
-          <button className="btn-primary" onClick={handleRegister} disabled={loading || otpSent}>
+          <button
+            className="btn-primary"
+            onClick={handleRegister}
+            disabled={loading || otpSent}
+          >
             {loading ? "Sending OTP…" : "Create account"}
           </button>
 
           <p className="auth-switch" style={{ marginTop: "24px" }}>
             Already have an account?{" "}
-            <span className="link" onClick={() => navigate("/")}>Sign in</span>
+            <span className="link" onClick={() => navigate("/")}>
+              Sign in
+            </span>
           </p>
         </div>
       </div>

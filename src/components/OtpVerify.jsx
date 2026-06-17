@@ -1,29 +1,22 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../api/axios";
+import { CameraIcon } from "./icons";
 import { useToast } from "./useToast";
 
-const CameraIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-    strokeLinecap="round" strokeLinejoin="round">
-    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-    <circle cx="12" cy="13" r="4"/>
-  </svg>
-);
-
 const OtpVerify = () => {
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { showToast, ToastContainer } = useToast();
 
-  const [otp, setOtp]         = useState("");
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
-  const email    = location.state?.email;
+  const email = location.state?.email;
   const password = location.state?.password;
   const firstName = location.state?.firstName;
-  const lastName  = location.state?.lastName;
+  const lastName = location.state?.lastName;
 
   const handleVerify = async () => {
     if (!email || !password) {
@@ -45,7 +38,10 @@ const OtpVerify = () => {
       localStorage.setItem("token", res.data.token);
       navigate("/albums");
     } catch (err) {
-      showToast(err?.response?.data?.message || "OTP verification failed", "error");
+      showToast(
+        err?.response?.data?.message || "OTP verification failed",
+        "error",
+      );
     } finally {
       setLoading(false);
     }
@@ -66,21 +62,28 @@ const OtpVerify = () => {
 
   return (
     <div className="auth-page">
-      {/* ── Left brand ── */}
       <div className="auth-brand">
         <div className="brand-logo">
-          <div className="brand-logo-mark"><CameraIcon /></div>
+          <div className="brand-logo-mark">
+            <CameraIcon />
+          </div>
           <span className="brand-logo-name">KaviosPx</span>
         </div>
 
         <div className="brand-tagline">
-          <h1>One last<br /><em>step</em><br />to go.</h1>
+          <h1>
+            One last
+            <br />
+            <em>step</em>
+            <br />
+            to go.
+          </h1>
           <p>
             We sent a 6-digit code to{" "}
             <strong style={{ color: "var(--text-1)", fontWeight: 500 }}>
               {email || "your email"}
-            </strong>.
-            Enter it below to confirm your identity.
+            </strong>
+            . Enter it below to confirm your identity.
           </p>
         </div>
 
@@ -97,15 +100,18 @@ const OtpVerify = () => {
         </div>
       </div>
 
-      {/* ── Right form ── */}
       <div className="auth-form-panel">
         <div className="auth-form-inner">
           <span className="auth-form-eyebrow">Verify email</span>
           <h2 className="auth-form-title">Check your inbox</h2>
-          <p className="auth-form-subtitle">Enter the 6-digit code we sent you</p>
+          <p className="auth-form-subtitle">
+            Enter the 6-digit code we sent you
+          </p>
 
           <div className="input-group">
-            <label className="input-label" htmlFor="otp-input">Verification code</label>
+            <label className="input-label" htmlFor="otp-input">
+              Verification code
+            </label>
             <input
               id="otp-input"
               className="input-field otp-input"
@@ -121,7 +127,11 @@ const OtpVerify = () => {
             />
           </div>
 
-          <button className="btn-primary" onClick={handleVerify} disabled={loading}>
+          <button
+            className="btn-primary"
+            onClick={handleVerify}
+            disabled={loading}
+          >
             {loading ? "Verifying…" : "Verify & continue"}
           </button>
 
@@ -130,7 +140,10 @@ const OtpVerify = () => {
             <span
               className="link"
               onClick={handleResend}
-              style={{ opacity: resending ? 0.5 : 1, pointerEvents: resending ? "none" : "auto" }}
+              style={{
+                opacity: resending ? 0.5 : 1,
+                pointerEvents: resending ? "none" : "auto",
+              }}
             >
               {resending ? "Sending…" : "Resend code"}
             </span>
@@ -138,7 +151,9 @@ const OtpVerify = () => {
 
           <p className="auth-switch" style={{ marginTop: "8px" }}>
             Wrong email?{" "}
-            <span className="link" onClick={() => navigate("/register")}>Go back</span>
+            <span className="link" onClick={() => navigate("/register")}>
+              Go back
+            </span>
           </p>
         </div>
       </div>

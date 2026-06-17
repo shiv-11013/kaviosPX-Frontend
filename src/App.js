@@ -6,7 +6,6 @@ import Albums from "./components/Albums";
 import AlbumDetail from "./components/AlbumDetail";
 import "./styles/main.css";
 
-// Redirects to login if no token is stored
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/" replace />;
@@ -35,7 +34,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -1,107 +1,16 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
+import {
+  CameraIcon,
+  ArrowLeftIcon,
+  UploadIcon,
+  TrashIcon,
+  SendIcon,
+  ImagesIcon,
+} from "./icons";
 import { useToast } from "./useToast";
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
-const CameraIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-    <circle cx="12" cy="13" r="4" />
-  </svg>
-);
-
-const ArrowLeftIcon = () => (
-  <svg
-    width="15"
-    height="15"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="19" y1="12" x2="5" y2="12" />
-    <polyline points="12 19 5 12 12 5" />
-  </svg>
-);
-
-const UploadIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="16 16 12 12 8 16" />
-    <line x1="12" y1="12" x2="12" y2="21" />
-    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6l-1 14H6L5 6" />
-    <path d="M10 11v6" />
-    <path d="M14 11v6" />
-    <path d="M9 6V4h6v2" />
-  </svg>
-);
-
-const SendIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="22" y1="2" x2="11" y2="13" />
-    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-  </svg>
-);
-
-const ImagePlaceholderIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <circle cx="8.5" cy="8.5" r="1.5" />
-    <polyline points="21 15 16 10 5 21" />
-  </svg>
-);
-
-// ── Lightbox ──────────────────────────────────────────────────────────────────
 const Lightbox = ({ src, onClose }) => {
   useEffect(() => {
     const handler = (e) => {
@@ -167,7 +76,6 @@ const Lightbox = ({ src, onClose }) => {
   );
 };
 
-// ── Component ─────────────────────────────────────────────────────────────────
 const AlbumDetail = () => {
   const { albumId } = useParams();
   const navigate = useNavigate();
@@ -192,10 +100,8 @@ const AlbumDetail = () => {
       .then((res) => setImages(res.data.images || []))
       .catch(() => showToast("Failed to load images", "error"))
       .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [albumId]);
+  }, [albumId, showToast]);
 
-  // ── Upload ──────────────────────────────────────────────────────────────────
   const handleFileSelect = (e) => {
     const f = e.target.files[0];
     if (!f) return;
@@ -226,7 +132,6 @@ const AlbumDetail = () => {
     }
   };
 
-  // Drag and drop
   const handleDragOver = (e) => {
     e.preventDefault();
   };
@@ -242,7 +147,6 @@ const AlbumDetail = () => {
     setFileName(f.name);
   };
 
-  // ── Comment ─────────────────────────────────────────────────────────────────
   const handleAddComment = async (imageId) => {
     const comment = comments[imageId]?.trim();
     if (!comment) return showToast("Write a comment first", "error");
@@ -264,7 +168,6 @@ const AlbumDetail = () => {
     }
   };
 
-  // ── Favourite (optimistic) ───────────────────────────────────────────────────
   const handleToggleFavourite = async (imageId) => {
     setImages((prev) =>
       prev.map((img) =>
@@ -292,7 +195,6 @@ const AlbumDetail = () => {
     }
   };
 
-  // ── Delete ──────────────────────────────────────────────────────────────────
   const confirmDelete = async () => {
     const imageId = deleteModal.imageId;
     setDeleteModal({ open: false, imageId: null });
@@ -305,10 +207,8 @@ const AlbumDetail = () => {
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* ── Nav ── */}
       <nav className="topnav">
         <div className="topnav-logo">
           <div className="topnav-logo-mark">
@@ -323,7 +223,6 @@ const AlbumDetail = () => {
       </nav>
 
       <main className="page-content">
-        {/* ── Page header ── */}
         <div className="page-header">
           <span className="page-eyebrow">Album</span>
           <h1 className="page-title">Photos</h1>
@@ -333,7 +232,6 @@ const AlbumDetail = () => {
           </p>
         </div>
 
-        {/* ── Upload bar ── */}
         <div
           className="upload-bar"
           onDragOver={handleDragOver}
@@ -369,7 +267,6 @@ const AlbumDetail = () => {
           </button>
         </div>
 
-        {/* ── Image grid ── */}
         {loading ? (
           <div className="loading-screen">
             <div className="spinner" />
@@ -389,7 +286,6 @@ const AlbumDetail = () => {
           <div className="image-grid">
             {images.map((img) => (
               <div className="image-card" key={img.imageId}>
-                {/* Thumbnail */}
                 <div
                   className="image-card-thumb"
                   onClick={() => img.url && setLightbox(img.url)}
@@ -412,7 +308,6 @@ const AlbumDetail = () => {
                     </div>
                   )}
 
-                  {/* Hover overlay */}
                   <div className="image-card-overlay">
                     <button
                       className={`btn-fav ${img.isFavorite ? "is-fav" : ""}`}
@@ -437,7 +332,6 @@ const AlbumDetail = () => {
                   </div>
                 </div>
 
-                {/* Comment section */}
                 <div className="image-card-body">
                   <div className="comment-form">
                     <input
@@ -478,7 +372,6 @@ const AlbumDetail = () => {
                   )}
                 </div>
 
-                {/* Footer */}
                 <div className="image-card-footer">
                   <button
                     className="btn-delete-img"
@@ -496,12 +389,10 @@ const AlbumDetail = () => {
         )}
       </main>
 
-      {/* ── Lightbox ── */}
       {lightbox && (
         <Lightbox src={lightbox} onClose={() => setLightbox(null)} />
       )}
 
-      {/* ── Delete modal ── */}
       {deleteModal.open && (
         <div
           className="modal-overlay"

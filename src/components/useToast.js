@@ -1,11 +1,5 @@
 import { useState, useCallback } from "react";
 
-/**
- * useToast — lightweight toast notifications
- * Usage:
- *   const { showToast, ToastContainer } = useToast();
- *   showToast("Saved!", "success");   // types: success | error | info
- */
 export function useToast() {
   const [toasts, setToasts] = useState([]);
 

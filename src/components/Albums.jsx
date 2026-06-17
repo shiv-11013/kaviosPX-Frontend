@@ -1,92 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
+import {
+  CameraIcon,
+  TrashIcon,
+  ShareIcon,
+  PlusIcon,
+  ImagesIcon,
+} from "./icons";
 import { useToast } from "./useToast";
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
-const CameraIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-    <circle cx="12" cy="13" r="4" />
-  </svg>
-);
-
-const ImagesIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <circle cx="8.5" cy="8.5" r="1.5" />
-    <polyline points="21 15 16 10 5 21" />
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6l-1 14H6L5 6" />
-    <path d="M10 11v6" />
-    <path d="M14 11v6" />
-    <path d="M9 6V4h6v2" />
-  </svg>
-);
-
-const ShareIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="18" cy="5" r="3" />
-    <circle cx="6" cy="12" r="3" />
-    <circle cx="18" cy="19" r="3" />
-    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-  >
-    <line x1="12" y1="5" x2="12" y2="19" />
-    <line x1="5" y1="12" x2="19" y2="12" />
-  </svg>
-);
-
-// ── Component ─────────────────────────────────────────────────────────────────
 const Albums = () => {
   const navigate = useNavigate();
   const { showToast, ToastContainer } = useToast();
@@ -109,8 +32,7 @@ const Albums = () => {
       .then((res) => setAlbums(res.data.albums || []))
       .catch(() => showToast("Failed to load albums", "error"))
       .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [showToast]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -184,7 +106,6 @@ const Albums = () => {
 
   return (
     <>
-      {/* ── Nav ── */}
       <nav className="topnav">
         <div className="topnav-logo">
           <div className="topnav-logo-mark">
@@ -199,7 +120,6 @@ const Albums = () => {
       </nav>
 
       <main className="page-content">
-        {/* ── Page header ── */}
         <div className="page-header">
           <span className="page-eyebrow">Gallery</span>
           <h1 className="page-title">My Albums</h1>
@@ -208,7 +128,6 @@ const Albums = () => {
           </p>
         </div>
 
-        {/* ── Create form ── */}
         <div className="create-card">
           <p className="create-card-title">New album</p>
           <div className="create-form-row">
@@ -241,7 +160,6 @@ const Albums = () => {
           </div>
         </div>
 
-        {/* ── Album list ── */}
         <p className="section-heading">
           {albums.length} {albums.length === 1 ? "album" : "albums"}
         </p>
@@ -266,10 +184,7 @@ const Albums = () => {
                   key={id}
                   onClick={() => navigate(`/albums/${id}`)}
                 >
-                  {/* Gold accent line */}
                   <div className="album-card-accent" aria-hidden="true" />
-
-                  {/* Thumbnail */}
                   <div className="album-card-thumb">
                     {al.coverUrl ? (
                       <img
@@ -286,7 +201,6 @@ const Albums = () => {
                     )}
                   </div>
 
-                  {/* Body */}
                   <div className="album-card-body">
                     <div className="album-card-meta">
                       <p className="album-card-name">{al.name}</p>
@@ -297,8 +211,6 @@ const Albums = () => {
                         </span>
                       )}
                     </div>
-
-                    {/* Actions — stop propagation so clicks don't navigate */}
                     <div
                       className="album-card-actions"
                       onClick={(e) => e.stopPropagation()}
@@ -354,7 +266,6 @@ const Albums = () => {
         </div>
       </main>
 
-      {/* ── Delete confirmation modal ── */}
       {deleteModal.open && (
         <div
           className="modal-overlay"

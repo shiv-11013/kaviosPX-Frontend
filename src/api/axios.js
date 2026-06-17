@@ -5,7 +5,6 @@ const instance = axios.create({
   withCredentials: true,
 });
 
-// Attach JWT to every request
 instance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -14,13 +13,11 @@ instance.interceptors.request.use((config) => {
   return config;
 });
 
-// Global response handler — redirect to login on 401
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
-      // Avoid redirect loop if already on auth pages
       const path = window.location.pathname;
       if (path !== "/" && path !== "/register" && path !== "/verify-otp") {
         window.location.href = "/";
