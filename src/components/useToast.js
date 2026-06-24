@@ -17,12 +17,17 @@ export function useToast() {
 
   const icons = {
     success: "✓",
-    error:   "✕",
-    info:    "i",
+    error: "✕",
+    info: "i",
   };
 
   const ToastContainer = () => (
-    <div className="toast-container" role="region" aria-label="Notifications" aria-live="polite">
+    <div
+      className="toast-container"
+      role="region"
+      aria-label="Notifications"
+      aria-live="polite"
+    >
       {toasts.map((t) => (
         <div
           key={t.id}
